@@ -584,11 +584,27 @@ export default function agentModeExtension(pi: ExtensionAPI) {
 							}
 						}
 						const fmt = (n: number) => n < 1000 ? String(n) : (n / 1000).toFixed(1) + "k";
+
+						// Context usage percentage
+						let contextStr = "";
+						try {
+							const ctxUsage = ctx.getContextUsage?.();
+							if (ctxUsage?.percent !== undefined && ctxUsage?.percent !== null) {
+								const pct = ctxUsage.percent;
+								const window_ = ctxUsage.contextWindow ?? 0;
+								const pctDisplay = pct > 90 ? theme.fg("error", pct.toFixed(1) + "%") :
+									pct > 70 ? theme.fg("warning", pct.toFixed(1) + "%") :
+									pct.toFixed(1) + "%";
+								const windowDisplay = "/" + (window_ ? fmt(window_) : "?");
+								contextStr = " " + pctDisplay + theme.fg("dim", windowDisplay);
+							}
+						} catch {}
+
 						const left2 = theme.fg("dim",
 							"↑" + fmt(input) + " ↓" + fmt(output) +
 							(reasoning ? " R" + fmt(reasoning) : "") +
 							" $" + cost.toFixed(3)
-						);
+						) + contextStr;
 						const provider = ctx.model?.provider || "";
 						const modelName = ctx.model?.id || "no-model";
 						const right2 = theme.fg("dim", "(" + provider + ") " + modelName);
