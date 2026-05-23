@@ -42,11 +42,20 @@ if [ -f settings.json ]; then
 fi
 
 # ── Custom skills ──────────────────────────────────────────────────────
-echo "==> Symlinking custom skills..."
 SKILL_TARGET="${AGENT_DIR}/skills/custom"
+OLD_SKILLS="${AGENT_DIR}/skills/custom-skills"
+
+echo "==> Symlinking custom skills..."
+
+# Remove old custom-skills (from previous dilljens/custom-skills setup)
+if [ -L "$OLD_SKILLS" ] || [ -d "$OLD_SKILLS" ]; then
+  echo "  Removing old custom-skills link..."
+  rm -rf "$OLD_SKILLS"
+fi
+
 mkdir -p "$(dirname "$SKILL_TARGET")"
 if [ -e "$SKILL_TARGET" ] && [ ! -L "$SKILL_TARGET" ]; then
-  echo "  WARNING: ${SKILL_TARGET} exists — skipping"
+  echo "  WARNING: ${SKILL_TARGET} exists as a real directory — skipping"
 else
   rm -f "$SKILL_TARGET"
   ln -sf "${REPO_DIR}/skills" "$SKILL_TARGET"
