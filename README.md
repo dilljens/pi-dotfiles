@@ -31,13 +31,11 @@ pi-dotfiles/
     │   ├── diagnose                  # Bug diagnosis loop
     │   ├── grill-with-docs           # Plan stress-test against docs
     │   ├── improve-codebase-architecture  # Find deepening opportunities
-    │   ├── maintain-wiki             # Codebase wiki for AI navigation
+    │   ├── wiki                      # Codebase wiki for AI navigation
     │   ├── prototype                 # Throwaway prototypes
     │   ├── review                    # Code review (standards + spec)
-    │   ├── setup-matt-pocock-skills  # Issue trackers, triage
     │   ├── tdd                       # Red-green-refactor loop
     │   ├── triage                    # Issue triage state machine
-    │   └── zoom-out                  # (skill placeholder)
     ├── skills-command/           # /skills command UI
     └── yeet/                     # git add + commit + push
 ```

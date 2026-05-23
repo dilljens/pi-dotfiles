@@ -16,3 +16,7 @@ Thumbs.db
 *~
 .vscode/
 .idea/
+
+node_modules/
+dist/
+*.tsbuildinfo

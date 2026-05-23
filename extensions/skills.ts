@@ -188,15 +188,6 @@ export default function (pi: ExtensionAPI) {
     }
   });
 
-  pi.registerCommand("yeet", {
-    description: "Stage all changes, commit with a concise message, and push.",
-    argumentHint: "[commit]",
-    handler: async (args, ctx) => {
-      ctx.ui.setEditorText("/skill:yeet" + (args ? " " + args : ""));
-      ctx.ui.notify("Loaded yeet skill — press Enter to run it", "info");
-    },
-  });
-
   pi.registerCommand("skills", {
     description: "Browse all pi skills grouped by category. Pass a term to pre-filter.",
     argumentHint: "[filter-term]",

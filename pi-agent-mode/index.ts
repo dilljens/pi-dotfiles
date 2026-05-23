@@ -535,7 +535,7 @@ export default function agentModeExtension(pi: ExtensionAPI) {
 		}
 	}
 
-	async function cycleAgent(ctx: ExtensionContext): Promise<void> {
+	async function cycleAgent(direction: 1 | -1, ctx: ExtensionContext): Promise<void> {
 		const agentNames = Array.from(agents.keys()).sort();
 		if (agentNames.length === 0) {
 			ctx.ui.notify(
@@ -548,7 +548,9 @@ export default function agentModeExtension(pi: ExtensionAPI) {
 		const cycleList = ["(none)", ...agentNames];
 		const currentName = activeAgentName ?? "(none)";
 		const currentIndex = cycleList.indexOf(currentName);
-		const nextIndex = currentIndex === -1 ? 0 : (currentIndex + 1) % cycleList.length;
+		const nextIndex = currentIndex === -1
+			? (direction === 1 ? 0 : cycleList.length - 1)
+			: (currentIndex + direction + cycleList.length) % cycleList.length;
 		const nextName = cycleList[nextIndex];
 
 		if (nextName === "(none)") {
@@ -571,56 +573,20 @@ export default function agentModeExtension(pi: ExtensionAPI) {
 		updateStatus(ctx);
 	}
 
-	async function cycleBackward(ctx: ExtensionContext): Promise<void> {
-		const agentNames = Array.from(agents.keys()).sort();
-		if (agentNames.length === 0) {
-			ctx.ui.notify(
-				"No agents found. Create agent files in ~/.pi/agent/agents/ or .pi/agents/",
-				"warning",
-			);
-			return;
-		}
-
-		const cycleList = ["(none)", ...agentNames];
-		const currentName = activeAgentName ?? "(none)";
-		const currentIndex = cycleList.indexOf(currentName);
-		const prevIndex = currentIndex <= 0 ? cycleList.length - 1 : currentIndex - 1;
-		const prevName = cycleList[prevIndex];
-
-		if (prevName === "(none)") {
-			activeAgentName = undefined;
-			activeAgent = undefined;
-			if (originalState?.model) {
-				await pi.setModel(originalState.model);
-			}
-			restoreAllTools();
-			ctx.ui.notify("Agent cleared, defaults restored", "info");
-			updateStatus(ctx);
-			return;
-		}
-
-		const agent = agents.get(prevName);
-		if (!agent) return;
-
-		await applyAgent(prevName, agent, ctx);
-		/* agent activated silently */
-		updateStatus(ctx);
-	}
-
 	// ─── Keyboard Shortcuts ─────────────────────────────────────────────────────
 
 	// Ctrl+W / Ctrl+Shift+W for agent cycling
 	pi.registerShortcut(Key.ctrl("w"), {
 		description: "Cycle agents forward",
 		handler: async (ctx) => {
-			await cycleAgent(ctx);
+			await cycleAgent(1, ctx);
 		},
 	});
 
 	pi.registerShortcut(Key.ctrlShift("w"), {
 		description: "Cycle agents backward",
 		handler: async (ctx) => {
-			await cycleBackward(ctx);
+			await cycleAgent(-1, ctx);
 		},
 	});
 

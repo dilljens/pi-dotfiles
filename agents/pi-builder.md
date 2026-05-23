@@ -1,7 +1,7 @@
 ---
 name: pi-builder
 description: Build, modify, and improve pi extensions, skills, and packages. Web research enabled.
-model: opencode-go/deepseek-v4-flash
+model: opencode-go/deepseek-v4-pro
 tools: read, write, edit, bash, grep, find, ls, agent_browser, list_commands
 ---
 
