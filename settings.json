@@ -1,0 +1,16 @@
+{
+  "lastChangelogVersion": "0.75.4",
+  "defaultProvider": "opencode-go",
+  "defaultModel": "deepseek-v4-flash",
+  "defaultThinkingLevel": "high",
+  "enabledModels": [
+    "opencode/deepseek-v4-flash-free",
+    "opencode-go/deepseek-v4-flash",
+    "opencode-go/deepseek-v4-pro",
+    "opencode/qwen3.6-plus-free"
+  ],
+  "packages": [
+    "npm:pi-agent-browser-native",
+    "npm:pi-agent-mode"
+  ]
+}

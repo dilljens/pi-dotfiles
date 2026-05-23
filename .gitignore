@@ -1,0 +1,14 @@
+# pi artifacts
+*.session
+pi.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/

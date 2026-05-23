@@ -1,0 +1,27 @@
+{
+  "name": "pi-agent-mode",
+  "version": "1.3.0",
+  "description": "OpenCode-style default agent mode for PI. Markdown agents with YAML frontmatter. Ctrl+Shift+M to cycle, Alt+S to search. Inline execution with full streaming visibility.",
+  "keywords": [
+    "pi-package",
+    "pi",
+    "coding-agent",
+    "agent-mode",
+    "opencode"
+  ],
+  "author": "ZGltYQ",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZGltYQ/agent-mode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ZGltYQ/agent-mode/issues"
+  },
+  "homepage": "https://github.com/ZGltYQ/agent-mode#readme",
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
