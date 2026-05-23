@@ -27,6 +27,12 @@ See [REFERENCE.md](REFERENCE.md) for templates and detection heuristics.
 | `plans/` | Architecture proposals | manual |
 | `README.md` | Usage instructions | `make wiki`, `refresh wiki` |
 
+## Subskills
+
+| Subskill | What it does |
+|----------|-------------|
+| [`install-wiki-hooks`](install-wiki-hooks/SKILL.md) | Git post-commit hook that warns when wiki is stale after source changes |
+
 `_index.md` — quickref block at top (build/test commands, key files, domain one-liners), then architecture topology + entry points + "change X → look at Y" table.
 
 `_standards.md` — three sections: `## Rules` (what you MUST not do — catastrophic), `## Practices` (how you SHOULD write new code), `## Patterns` (how code IS written — detected conventions).
@@ -72,6 +78,17 @@ Use when project source code has changed and the wiki needs to reflect it — ne
 6. Regenerate `_index.md` — updated domain registry, topology, file counts.
 7. Re-scan patterns — propose additions to `_standards.md` Patterns if new conventions emerged → **ask user to approve**.
 8. Report what changed.
+
+## Preventing wiki drift
+
+After running `make wiki`, consider installing the post-commit hook:
+
+```bash
+# Install the stale-wiki reminder hook
+# See install-wiki-hooks/SKILL.md for details
+```
+
+This catches the write-and-forget problem automatically.
 
 ## Proactive suggestion
 

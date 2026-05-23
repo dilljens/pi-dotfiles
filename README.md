@@ -27,18 +27,25 @@ pi-dotfiles/
 │   └── package.json
 │
 └── skills/                       → ~/.pi/agent/skills/custom/ (symlinked)
-    ├── engineering/              (tdd, diagnose, review, prototype, …)
-    ├── personal/                 (obsidian-vault, edit-article)
-    ├── productivity/             (write-a-skill, handoff, grill-me, …)
-    ├── misc/                     (setup-pre-commit, git-guardrails, …)
-    ├── in-progress/              (writing-shape, writing-beats, …)
-    └── deprecated/               (qa, design-an-interface, …)
+    ├── engineering/
+    │   ├── diagnose                  # Bug diagnosis loop
+    │   ├── grill-with-docs           # Plan stress-test against docs
+    │   ├── improve-codebase-architecture  # Find deepening opportunities
+    │   ├── maintain-wiki             # Codebase wiki for AI navigation
+    │   ├── prototype                 # Throwaway prototypes
+    │   ├── review                    # Code review (standards + spec)
+    │   ├── setup-matt-pocock-skills  # Issue trackers, triage
+    │   ├── tdd                       # Red-green-refactor loop
+    │   ├── triage                    # Issue triage state machine
+    │   └── zoom-out                  # (skill placeholder)
+    ├── skills-command/           # /skills command UI
+    └── yeet/                     # git add + commit + push
 ```
 
 ## Fresh setup
 
 ```bash
-# 1. Install pi if you haven't
+# 1. Install pi
 curl -fsSL https://pi.dev/install.sh | bash
 
 # 2. Clone this repo
@@ -52,37 +59,24 @@ cd pi-dotfiles
 pi
 ```
 
-The bootstrap script symlinks everything into `~/.pi/agent/` so edits in the repo are live immediately. Run `/reload` inside pi to pick up changes without restarting.
+The bootstrap script symlinks everything into `~/.pi/agent/` so edits in the repo are live immediately.
 
 ## Making changes
 
-Since agents and extensions are symlinked, editing them in the repo directory automatically updates the running pi installation:
+Since agents, extensions, and skills are symlinked, editing them in the repo is live:
 
 ```bash
-vi pi-agent-mode/index.ts   # edit the agent footer
-vi agents/agent-maker.md     # improve the agent-maker
-vi extensions/skills.ts      # tweak the skills browser
+vi agents/agent-maker.md      # improve agent-maker
+vi extensions/skills.ts       # tweak skills browser
+vi pi-agent-mode/index.ts     # edit footer / agent switching
 ```
 
-Commit and push as usual:
+Commit and push:
 
 ```bash
 git add -A
-git commit -m "tweak agent footer truncation"
+git commit -m "whatever"
 git push
 ```
 
-## Updating custom skills
-
-The skills are pulled from [dilljens/custom-skills](https://github.com/dilljens/custom-skills). To pull the latest:
-
-```bash
-cd pi-dotfiles/skills
-git pull https://github.com/dilljens/custom-skills.git main
-```
-
-## Credits
-
-- [pi coding agent](https://github.com/earendil-works/pi-mono) — the agent framework
-- [pi-agent-mode](https://github.com/mariozechner/pi-agent-mode) — inline agent switching
-- [firecrawl skills](https://github.com/nicholasgriffintn/pi-firecrawl-skills) — web research
+On a fresh machine, clone and run `./bootstrap.sh` to pull everything back.
