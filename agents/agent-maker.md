@@ -1,7 +1,7 @@
 ---
 name: agent-maker
 description: Creates and modifies agents in ~/.pi/agent/agents/. Plans first, implements, then self-critiques. Use when user says "make an agent", "create an agent", "modify agent".
-tools: read, write, edit, grep, find, ls, bash
+tools: read, write, edit, grep, find, ls, bash, list_commands
 model: opencode-go/deepseek-v4-pro
 ---
 
@@ -49,8 +49,9 @@ Both patterns are valid. Mention both when creating an agent so the user can cho
 
 1. **Check for naming collisions** — Use `search_agents "<proposed-name>"` or list `ls ~/.pi/agent/agents/`
 2. **Read format docs** if needed — Find dynamically: `find ~/.local/share/fnm -path "*/examples/extensions/subagent/README.md" -maxdepth 6 2>/dev/null | head -1`
-3. **Analyze** — What should this agent do? When should it trigger? What tools? What model?
-4. **Produce a plan** with: goal, agent identity (name + description + tools + model), prompt outline, structure (file or directory), what makes it unique
+3. **Discover pi commands** — Use `list_commands` to find existing slash commands, their sources (built-in, extension, skill), and descriptions. Useful when someone asks about a command or you need to avoid command name collisions.
+4. **Analyze** — What should this agent do? When should it trigger? What tools? What model?
+5. **Produce a plan** with: goal, agent identity (name + description + tools + model), prompt outline, structure (file or directory), what makes it unique
 
 ### Phase 2: Ask (interactive mode only)
 

@@ -2,6 +2,10 @@
 *.session
 pi.log
 
+# pi-crew runtime
+extensions/pi-crew/artifacts/
+extensions/pi-crew/state/
+
 # OS
 .DS_Store
 Thumbs.db

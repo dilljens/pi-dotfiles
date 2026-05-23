@@ -7,7 +7,7 @@ Two sections: quick reference at top, full architecture below.
 ```markdown
 # <Project Name> — Architecture Overview
 
-**Build**: `<cmd>`  **Test**: `<cmd>` (<N> tests)
+**Build**: `<cmd>`  **Test**: `<cmd>` (<N> tests)  **Setup**: `<cmd>`
 
 ## Quick reference
 
@@ -40,6 +40,7 @@ Two sections: quick reference at top, full architecture below.
 ### For AI agents
 | Task | Start here |
 |------|------------|
+| **Cold start (zero context)** | `_glossary.md` → `_index.md` → `_standards.md` § Rules → § Practices → target `features/<domain>.md` → § Patterns |
 | Add a feature | `_standards.md` § Rules → § Practices → target `features/<domain>.md` → § Patterns |
 | Fix a bug | `features/<domain>.md` (edge cases) → `_standards.md` § Rules |
 | Refactor a module | `features/<domain>.md` (deps + consumers) → `_standards.md` § Patterns |
@@ -164,8 +165,10 @@ Also scan AGENTS.md, CONTEXT.md, README for explicit rules.
 | Category | Detect |
 |----------|--------|
 | Error handling | throw vs return; `Result`, `Either`, `{data, error}` patterns; error code enums; panic macros |
+| Pain points / danger zones | `// @ts-ignore`, `eslint-disable`, `#[allow(...)]`, `# noqa`; `@deprecated`/`#[deprecated]` annotations; `TODO`/`FIXME`/`HACK`/`XXX` comment density per domain |
 | Module structure | barrel files (index.ts/__init__.py/mod.rs), named vs default exports, circular dependencies |
 | Type conventions | ADT/enum usage, Option/Maybe patterns, discriminated unions, newtype wrappers, interface composition |
+| Type safety | branded/newtype wrappers (`type Email = string & { __brand: 'Email' }`), smart constructors, `unsafe` blocks (Rust), null-safety density |
 | Async/concurrency | async/await, callbacks, event loops, state-machine switch/case, channels/actors, mutex patterns |
 | State management | hooks, stores, globals, actors, context objects |
 | Naming | Sample 20+ names per layer, detect dominant style |
@@ -197,6 +200,14 @@ Numbered steps.
 
 ## Edge cases & gotchas
 
+## Testing strategy
+| Aspect | Approach |
+|--------|----------|
+| Unit tests | <how isolated logic is tested> |
+| Integration tests | <how domain boundaries are tested> |
+| Key fixtures / mocks | <critical test infrastructure> |
+| Run command | `<cmd> <filter>` |
+
 ## Dependencies
 | Depends on | For |
 
@@ -219,6 +230,22 @@ Numbered steps.
 
 ---
 
+## `_glossary.md` template
+
+```markdown
+# Glossary
+
+Project-specific terms and acronyms.
+
+| Term | Definition | Context |
+|------|------------|---------|
+| <term> | <1-2 sentence definition> | <where it appears> |
+```
+
+Detect terms from: domain names, codebase comments mentioning acronyms, README, CONTEXT.md, AGENTS.md, variable/type names with project-specific jargon. **Ask user to approve** the glossary after initial detection and on `/wiki:sync` when new terms emerge.
+
+---
+
 ## Domain detection
 
 1. **Directory clusters** — strongest signal
@@ -228,6 +255,26 @@ Numbered steps.
 5. **Config-defined** — monorepo packages
 
 2–20 files per domain.
+
+---
+
+## Transitive dependency detection (for `/wiki:sync`)
+
+When a file changes, its impact may ripple through import chains. Use this to find affected domains beyond the file's own domain.
+
+| Language | Technique |
+|----------|-----------|
+| TypeScript/JS | `import`/`require` statements → trace to consumers via reverse import search |
+| Python | `import` statements → reverse import search in all `.py` files |
+| Rust | `use` declarations + `mod` declarations → trace consumers |
+| C/C++ | `#include` directives → trace consumers |
+| Go | `import` statements → trace consumers |
+
+**Process**: For each changed file:
+1. Find which files import it (reverse dependency).
+2. Map those files to their domains.
+3. Flag any domain not already flagged by direct file-change analysis.
+4. Include those domains in the update scope with a note: "Affected transitively via <changed file>."
 
 ---
 
@@ -258,7 +305,17 @@ AI-optimized codebase map.
 3. `_standards.md` § Practices — how to write new code
 4. `features/<domain>.md` — module deep dive
 
-## For agents
+## For AI agents
+
+### Cold start (zero context)
+1. `_glossary.md` — learn project vocabulary
+2. `_index.md` — architecture topology + domain one-liners
+3. `_standards.md` § Rules — what never to do
+4. `_standards.md` § Practices — how to write new code
+5. `features/<domain>.md` — the domain you're working on
+6. `_standards.md` § Patterns — match conventions during generation
+
+### Task-specific
 
 ### Adding a feature
 _index (Navigation) → _standards (Rules + Practices) → domain doc → _standards (Patterns)
@@ -276,8 +333,14 @@ _index (domain one-liners) → domain doc
 domain doc → _standards (Practices: Testing + Patterns: Test patterns)
 
 ## Commands
-- `make wiki` — initialize
-- `refresh standards` — propose updated _standards.md
+- `/wiki:make` — initialize wiki (interactive)
+- `/wiki:onboard` — cold-start walkthrough
+- `/wiki:update` — refresh after code changes
+- `/wiki:sync` — upgrade wiki after skill changes
+- `/wiki:check` — verify internal consistency
+
+## Preventing drift
+Install the [post-commit hook](../wiki/install-wiki-hooks/SKILL.md) to get reminded when source changes land without wiki updates. Run `/wiki:check` before PRs.
 
 ## Stale docs
 Read source. If doc is wrong, propose update. Don't silently ignore.
@@ -290,10 +353,10 @@ Read source. If doc is wrong, propose update. Don't silently ignore.
 
 ## Edge cases
 
-**New project**: `make wiki` builds from scratch. Links existing README.
+**New project**: `/wiki:make` builds from scratch. Links existing README.
 
 **Existing docs/**: Detected, linked from `_index.md`, excluded from wiki scope.
 
-**Large refactor**: Re-run `make wiki` if domain structure changed.
+**Large refactor**: Re-run `/wiki:make` if domain structure changed.
 
 **Monorepo**: Detect workspace configs. Each member gets `docs/wiki/<member>/`.

@@ -1,11 +1,11 @@
 ---
 name: install-wiki-hooks
-description: Install a git post-commit hook that suggests `update wiki` when source files change but wiki docs aren't updated. Use after `make wiki` or when adding the wiki to a project. Prevents wiki drift.
+description: Install a git post-commit hook that suggests `/wiki:update` when source files change but wiki docs aren't updated. Use after `/wiki:make` or when adding the wiki to a project. Prevents wiki drift.
 ---
 
 # Install Wiki Hooks
 
-Bundled resource for the [maintain-wiki](../SKILL.md) skill. Installs a `post-commit` hook that detects stale wiki docs.
+Bundled resource for the [wiki](../SKILL.md) skill. Installs a `post-commit` hook that detects stale wiki docs.
 
 ## What it does
 
@@ -13,7 +13,7 @@ After every commit, the hook checks:
 - Did this commit change source files (code, config, etc.)?
 - Did it **not** change any files in `docs/wiki/`?
 
-If both are true, it prints a reminder: **"Consider running: update wiki"**
+If both are true, it prints a reminder: **"Consider running: /wiki:update"
 
 It stays silent for:
 - Wiki-only changes

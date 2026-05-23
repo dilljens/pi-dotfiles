@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Git post-commit hook: suggest `update wiki` when source files change but wiki docs don't.
+# Git post-commit hook: suggest `/wiki:update` when source files change but wiki docs don't.
+# Also suggests `/wiki:check` when wiki files change to catch stale cross-refs.
 # Install: see SKILL.md in this directory
 
 # Skip if no parent commit (first commit or orphan branch)
@@ -45,8 +46,12 @@ done
 if [ "$SOURCE_CHANGED" = true ] && [ "$WIKI_CHANGED" = false ]; then
   echo ""
   echo "💡 Source files changed but docs/wiki/ wasn't updated."
-  echo "   Consider running: update wiki"
-  echo "   (or 'refresh wiki' if the maintain-wiki skill has changed)"
+  echo "   Consider running: /wiki:update"
+  echo "   (or '/wiki:sync' if the wiki skill has changed)"
+  echo ""
+elif [ "$WIKI_CHANGED" = true ]; then
+  echo ""
+  echo "🔎 Wiki files changed. Run '/wiki:check' to verify consistency before committing."
   echo ""
 fi
 

@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.75.4",
+  "lastChangelogVersion": "0.75.5",
   "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4-flash",
   "defaultThinkingLevel": "high",
@@ -11,6 +11,7 @@
   ],
   "packages": [
     "npm:pi-agent-browser-native",
-    "npm:pi-agent-mode"
+    "npm:pi-agent-mode",
+    "npm:pi-crew"
   ]
 }
