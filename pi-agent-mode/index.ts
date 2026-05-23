@@ -100,7 +100,7 @@ function findAgentFiles(...dirs: string[]): string[] {
 	for (const dir of dirs) {
 		if (!existsSync(dir)) continue;
 		for (const entry of readdirSync(dir, { withFileTypes: true })) {
-			if (entry.isFile() && entry.name.endsWith(".md")) {
+			if ((entry.isFile() || entry.isSymbolicLink()) && entry.name.endsWith(".md")) {
 				files.push(join(dir, entry.name));
 			}
 		}
