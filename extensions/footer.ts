@@ -99,8 +99,13 @@ export default function (pi: ExtensionAPI) {
 		const cwd = ctx.cwd;
 		const displayPath = cwd.startsWith(home) ? "~" + cwd.slice(home.length) : cwd;
 
-		// ── Line 1: path (branch) ──
-		const line1 = truncateToWidth(theme.fg("dim", displayPath + (branch ? " (" + branch + ")" : "")), width);
+		// ── Line 1: path (branch) .................................. auth:bare ──
+		const pathLeft = theme.fg("dim", displayPath + (branch ? " (" + branch + ")" : ""));
+		const authRight = authProfile ? theme.fg("accent", "auth:" + authProfile) : "";
+		const pathW = visibleWidth(pathLeft);
+		const authW = visibleWidth(authRight);
+		const pad1 = " ".repeat(Math.max(1, width - pathW - authW));
+		const line1 = truncateToWidth(pathLeft + pad1 + authRight, width);
 
 		// ── Line 2: tokens | context | [plan] | model | auth:profile | • thinking ──
 		const stats = theme.fg("dim",
@@ -109,7 +114,6 @@ export default function (pi: ExtensionAPI) {
 
 		const rightBlock = theme.fg("dim",
 			modelId +
-			(authProfile ? "  " + theme.fg("accent", "auth:" + authProfile) : "") +
 			"  " + theme.fg("accent", "• " + thinkingLevel)
 		);
 
