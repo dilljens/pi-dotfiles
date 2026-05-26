@@ -1,8 +1,10 @@
 /**
  * Footer Extension — standalone TUI footer with agent status, token stats, context usage.
  *
- * This extension replaces the built-in footer. It reads extension statuses
- * (including "agent" from pi-agent-mode) and renders a compact two-line status bar.
+ * Layout:
+ *   ~/project (branch)
+ *   auth:<profile>
+ *   ↑tokens ↓tokens $cost context/total  [⏸ plan]  model • thinking
  */
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
@@ -12,10 +14,7 @@ import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 export default function (pi: ExtensionAPI) {
 	let enabled = false;
 
-	// Footer statuses we care about
-	const AGENT_STATUS_KEY = "agent";
-
-	// Shared render function — used by both the /footer command and session_start handler
+	// Shared render function
 	function createFooterRenderer(
 		ctx: any,
 		theme: any,
@@ -28,15 +27,15 @@ export default function (pi: ExtensionAPI) {
 		// ── Token stats from session ──
 		let input = 0, output = 0, cost = 0;
 		for (const e of ctx.sessionManager.getBranch()) {
-			if (e.type === "message" && e.message.role === "assistant") {
-				const m = e.message as AssistantMessage;
+			if (e.type === "message" && (e as any).message?.role === "assistant") {
+				const m = (e as any).message as AssistantMessage;
 				input += m.usage.input;
 				output += m.usage.output;
 				cost += m.usage.cost.total;
 			}
 		}
 
-		// ── Context usage (raw tokens) ──
+		// ── Context usage ──
 		let contextStr = "";
 		try {
 			const ctxUsage = ctx.getContextUsage?.();
@@ -55,34 +54,11 @@ export default function (pi: ExtensionAPI) {
 			contextStr = "";
 		}
 
-		// ── Git branch ──
-		const branch = footerData.getGitBranch();
-
-		// ── CWD path ──
-		const cwd = ctx.cwd;
-		const home = process.env.HOME || "";
-		const displayPath = cwd.startsWith(home) ? "~" + cwd.slice(home.length) : cwd;
-
-		// ── Extension statuses (agent from pi-agent-mode) ──
-		const statuses = footerData.getExtensionStatuses();
-		const agentStatus = statuses.get(AGENT_STATUS_KEY);
-
-		// ── Build line 1: path left, agent right ──
-		const left1 = theme.fg("dim", displayPath + (branch ? " (" + branch + ")" : ""));
-		const right1 = agentStatus ? theme.fg("dim", agentStatus) : "";
-		const pad1 = right1 ? " ".repeat(Math.max(1, width - visibleWidth(left1) - visibleWidth(right1))) : "";
-		const line1 = truncateToWidth(left1 + pad1 + (right1 || ""), width);
-
-		// ── Build line 2: tokens + context on left, model on right ──
-		const left2 = theme.fg("dim",
-			"↑" + fmt(input) + " ↓" + fmt(output) +
-			" $" + cost.toFixed(3)
-		) + contextStr;
-
+		// ── Model info ──
 		const provider = ctx.model?.provider || "";
 		const modelId = ctx.model?.id || "no-model";
 
-		// ── Thinking level (scan branch for latest change) ──
+		// ── Thinking level ──
 		let thinkingLevel = "?";
 		for (const e of ctx.sessionManager.getBranch()) {
 			if (e.type === "thinking_level_change") {
@@ -90,17 +66,63 @@ export default function (pi: ExtensionAPI) {
 			}
 		}
 
-		const right2 = theme.fg("dim",
-			(provider ? "(" + provider + ") " : "") + modelId +
-			" " + theme.fg("accent", thinkingLevel)
-		);
+		// ── Plan mode status from extension statuses ──
+		const statuses = footerData.getExtensionStatuses();
+		const planStatus = statuses.get("plan-mode") || "";
 
-		const left2w = visibleWidth(left2);
-		const right2w = visibleWidth(right2);
-		const pad2 = " ".repeat(Math.max(1, width - left2w - right2w));
-		const line2 = truncateToWidth(left2 + pad2 + right2, width);
+		// ── Auth profile ──
+		// Check which profile dir has an auth.json with the active provider
+		const home = process.env.HOME || "";
+		const profilesDir = home + "/.pi/agent-profiles";
+		let authProfile = "";
+		try {
+			const fs = require("fs");
+			const profiles = fs.readdirSync(profilesDir, { withFileTypes: true });
+			for (const entry of profiles) {
+				if (!entry.isDirectory()) continue;
+				const authPath = profilesDir + "/" + entry.name + "/auth.json";
+				if (fs.existsSync(authPath)) {
+					try {
+						const content = JSON.parse(fs.readFileSync(authPath, "utf-8"));
+						if (content && typeof content === "object" && Object.keys(content).length > 0) {
+							authProfile = entry.name;
+							break;
+						}
+					} catch {}
+				}
+			}
+		} catch {}
+		const authStr = authProfile ? theme.fg("accent", "auth:" + authProfile) : "";
 
-		return [line1, line2];
+		// ── Git branch ──
+		const branch = footerData.getGitBranch();
+
+		// ── CWD path ──
+		const cwd = ctx.cwd;
+		const displayPath = cwd.startsWith(home) ? "~" + cwd.slice(home.length) : cwd;
+
+		// ── Line 1: path (branch) ──
+		const left1 = theme.fg("dim", displayPath + (branch ? " (" + branch + ")" : ""));
+		const line1 = truncateToWidth(left1, width);
+
+		// ── Line 2: auth:profile ──
+		const line2 = authStr;
+
+		// ── Line 3: tokens | context | [plan] | model • thinking ──
+		const stats = theme.fg("dim",
+			"↑" + fmt(input) + " ↓" + fmt(output) + " $" + cost.toFixed(3)
+		) + contextStr;
+
+		const planIndicator = planStatus ? "  " + planStatus : "";
+
+		const modelRight = theme.fg("dim", modelId + " " + theme.fg("accent", "• " + thinkingLevel));
+
+		const statsW = visibleWidth(stats) + visibleWidth(planIndicator);
+		const modelW = visibleWidth(modelRight);
+		const pad3 = " ".repeat(Math.max(1, width - statsW - modelW));
+		const line3 = truncateToWidth(stats + planIndicator + pad3 + modelRight, width);
+
+		return [line1, line2, line3];
 	}
 
 	pi.registerCommand("footer", {
