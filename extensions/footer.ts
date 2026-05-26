@@ -3,8 +3,7 @@
  *
  * Layout:
  *   ~/project (branch)
- *   auth:<profile>
- *   ↑tokens ↓tokens $cost context/total  [⏸ plan]  model • thinking
+ *   ↑tokens ↓tokens $cost context/total  [plan]  model  auth:profile  • thinking
  */
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
@@ -14,7 +13,6 @@ import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 export default function (pi: ExtensionAPI) {
 	let enabled = false;
 
-	// Shared render function
 	function createFooterRenderer(
 		ctx: any,
 		theme: any,
@@ -24,7 +22,7 @@ export default function (pi: ExtensionAPI) {
 		const fmt = (n: number) =>
 			n < 1000 ? String(n) : (n / 1000).toFixed(1) + "k";
 
-		// ── Token stats from session ──
+		// ── Token stats ──
 		let input = 0, output = 0, cost = 0;
 		for (const e of ctx.sessionManager.getBranch()) {
 			if (e.type === "message" && (e as any).message?.role === "assistant") {
@@ -55,7 +53,6 @@ export default function (pi: ExtensionAPI) {
 		}
 
 		// ── Model info ──
-		const provider = ctx.model?.provider || "";
 		const modelId = ctx.model?.id || "no-model";
 
 		// ── Thinking level ──
@@ -66,12 +63,14 @@ export default function (pi: ExtensionAPI) {
 			}
 		}
 
-		// ── Plan mode status from extension statuses ──
+		// ── Plan mode status (already colored by plan-mode extension) ──
 		const statuses = footerData.getExtensionStatuses();
-		const planStatus = statuses.get("plan-mode") || "";
+		const rawPlanStatus = statuses.get("plan-mode") || "";
+		// Simplify: just detect if plan mode is active
+		const planActive = rawPlanStatus.includes("plan") || rawPlanStatus.includes("build");
+		const planLabel = planActive ? "  " + theme.fg("warning", "plan") : "";
 
 		// ── Auth profile ──
-		// Check which profile dir has an auth.json with the active provider
 		const home = process.env.HOME || "";
 		const profilesDir = home + "/.pi/agent-profiles";
 		let authProfile = "";
@@ -92,7 +91,6 @@ export default function (pi: ExtensionAPI) {
 				}
 			}
 		} catch {}
-		const authStr = authProfile ? theme.fg("accent", "auth:" + authProfile) : "";
 
 		// ── Git branch ──
 		const branch = footerData.getGitBranch();
@@ -102,27 +100,25 @@ export default function (pi: ExtensionAPI) {
 		const displayPath = cwd.startsWith(home) ? "~" + cwd.slice(home.length) : cwd;
 
 		// ── Line 1: path (branch) ──
-		const left1 = theme.fg("dim", displayPath + (branch ? " (" + branch + ")" : ""));
-		const line1 = truncateToWidth(left1, width);
+		const line1 = truncateToWidth(theme.fg("dim", displayPath + (branch ? " (" + branch + ")" : "")), width);
 
-		// ── Line 2: auth:profile ──
-		const line2 = authStr;
-
-		// ── Line 3: tokens | context | [plan] | model • thinking ──
+		// ── Line 2: tokens | context | [plan] | model | auth:profile | • thinking ──
 		const stats = theme.fg("dim",
 			"↑" + fmt(input) + " ↓" + fmt(output) + " $" + cost.toFixed(3)
 		) + contextStr;
 
-		const planIndicator = planStatus ? "  " + planStatus : "";
+		const rightBlock = theme.fg("dim",
+			modelId +
+			(authProfile ? "  " + theme.fg("accent", "auth:" + authProfile) : "") +
+			"  " + theme.fg("accent", "• " + thinkingLevel)
+		);
 
-		const modelRight = theme.fg("dim", modelId + " " + theme.fg("accent", "• " + thinkingLevel));
+		const statsW = visibleWidth(stats) + visibleWidth(planLabel);
+		const rightW = visibleWidth(rightBlock);
+		const pad = " ".repeat(Math.max(1, width - statsW - rightW));
+		const line2 = truncateToWidth(stats + planLabel + pad + rightBlock, width);
 
-		const statsW = visibleWidth(stats) + visibleWidth(planIndicator);
-		const modelW = visibleWidth(modelRight);
-		const pad3 = " ".repeat(Math.max(1, width - statsW - modelW));
-		const line3 = truncateToWidth(stats + planIndicator + pad3 + modelRight, width);
-
-		return [line1, line2, line3];
+		return [line1, line2];
 	}
 
 	pi.registerCommand("footer", {
@@ -133,7 +129,6 @@ export default function (pi: ExtensionAPI) {
 			if (enabled) {
 				ctx.ui.setFooter((tui, theme, footerData) => {
 					const unsub = footerData.onBranchChange(() => tui.requestRender());
-
 					return {
 						dispose: unsub,
 						invalidate() {},
@@ -150,7 +145,6 @@ export default function (pi: ExtensionAPI) {
 		},
 	});
 
-	// Enable by default on first load
 	pi.on("session_start", async (_event, ctx) => {
 		if (!enabled) {
 			enabled = true;
