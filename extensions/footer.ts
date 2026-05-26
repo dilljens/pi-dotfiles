@@ -81,7 +81,19 @@ export default function (pi: ExtensionAPI) {
 
 		const provider = ctx.model?.provider || "";
 		const modelId = ctx.model?.id || "no-model";
-		const right2 = theme.fg("dim", (provider ? "(" + provider + ") " : "") + modelId);
+
+		// ── Thinking level (scan branch for latest change) ──
+		let thinkingLevel = "?";
+		for (const e of ctx.sessionManager.getBranch()) {
+			if (e.type === "thinking_level_change") {
+				thinkingLevel = (e as any).thinkingLevel;
+			}
+		}
+
+		const right2 = theme.fg("dim",
+			(provider ? "(" + provider + ") " : "") + modelId +
+			" " + theme.fg("accent", thinkingLevel)
+		);
 
 		const left2w = visibleWidth(left2);
 		const right2w = visibleWidth(right2);
