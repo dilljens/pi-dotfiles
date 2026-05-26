@@ -113,10 +113,8 @@ export default function planModeExtension(pi: ExtensionAPI): void {
 		},
 	});
 
-	pi.registerShortcut(Key.ctrlAlt("p"), {
-		description: "Toggle plan mode",
-		handler: async (ctx) => togglePlanMode(ctx),
-	});
+	// Shortcut removed — plan-mode-footer.ts registers the same ctrl+alt+p shortcut
+	// and was winning the conflict anyway. Keeping both would produce a warning.
 
 	// Block destructive bash commands in plan mode
 	pi.on("tool_call", async (event) => {

@@ -1,0 +1,11 @@
+{
+  "compaction": { "enabled": false },
+  "lastChangelogVersion": "0.75.5",
+  "defaultProvider": "deepseek",
+  "defaultModel": "deepseek-v4-pro",
+  "defaultThinkingLevel": "high",
+  "enabledModels": [
+    "deepseek/deepseek-v4-pro",
+    "deepseek/deepseek-v4-flash"
+  ]
+}

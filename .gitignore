@@ -6,6 +6,10 @@ pi.log
 extensions/pi-crew/artifacts/
 extensions/pi-crew/state/
 
+# Auth secrets — never commit
+profiles/*/auth.json
+auth.json
+
 # OS
 .DS_Store
 Thumbs.db
