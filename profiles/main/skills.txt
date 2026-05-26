@@ -1,3 +1,8 @@
-engineering/maintain-wiki
-engineering/improve-codebase-architecture
+engineering/diagnose
 engineering/grill-with-docs
+engineering/improve-codebase-architecture
+engineering/maintain-wiki
+engineering/prototype
+engineering/review
+engineering/tdd
+engineering/triage

@@ -1,6 +1,10 @@
-# Main Profile — Executor
+# Main Profile — pi-crew Orchestrator
 
-Direct implementation profile. No reasoning overhead, aggressive tool usage, minimal diffs.
+Full-featured profile with pi-crew for multi-agent orchestration and the complete skill set.
+
+## Architecture
+
+Uses pi-crew to spawn and manage multiple agent teams for complex, multi-phase work.
 
 ## Model
 
@@ -11,23 +15,7 @@ Direct implementation profile. No reasoning overhead, aggressive tool usage, min
 | Thinking | minimal |
 | Context | 1M tokens |
 
-## Purpose
-
-This is the **Executor** role. Receives an approved plan and implements it directly.
-
-Style rules:
-- Minimal diffs — change only what's needed
-- Preserve existing APIs and design patterns
-- No speculative refactoring
-- Follow the plan, don't deviate
-
-## When to use
-
-- After the Planner has an approved [A] Execute plan
-- For straightforward one-shot tasks that don't need a plan
-- As a subagent spawned by the Planner
-
-## Extensions
+## Extensions (4)
 
 | Extension | Purpose |
 |-----------|---------|
@@ -36,17 +24,23 @@ Style rules:
 | pi-crew | Multi-agent team orchestration |
 | pi-observational-memory | Session memory tracking |
 
-## Skills
+## Skills (8)
 
 | Skill | Purpose |
 |-------|---------|
-| maintain-wiki | Update wiki after code changes |
-| improve-codebase-architecture | Find deepening opportunities |
-| grill-with-docs | Stress-test plans against docs |
+| diagnose | Bug diagnosis loop |
+| grill-with-docs | Stress-test plans against domain docs and ADRs |
+| improve-codebase-architecture | Find deepening opportunities, refactoring targets |
+| maintain-wiki | Create and update docs/wiki/ for AI navigation |
+| prototype | Throwaway prototypes for exploration |
+| review | Code review against standards and spec |
+| tdd | Red-green-refactor loop |
+| triage | Issue triage state machine |
 
 ## Key commands
 
 ```
-/compact
+/crew
 /wiki:update
+/compact
 ```
