@@ -1,11 +1,11 @@
 {
   "compaction": { "enabled": false },
   "lastChangelogVersion": "0.75.5",
-  "defaultProvider": "deepseek",
+  "defaultProvider": "opencode-go",
   "defaultModel": "deepseek-v4-pro",
   "defaultThinkingLevel": "high",
   "enabledModels": [
-    "deepseek/deepseek-v4-pro",
-    "deepseek/deepseek-v4-flash"
+    "opencode-go/deepseek-v4-pro",
+    "opencode-go/deepseek-v4-flash"
   ]
 }
