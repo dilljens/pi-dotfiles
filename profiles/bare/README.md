@@ -43,24 +43,48 @@ Two-agent workflow with structured plan output. Planner proposes, Executor imple
 
 Or automated: `/subagent deepseek-v4-flash "Implement X"`
 
-## Extensions (6)
+## Extensions
 
+### npm (6)
 | Extension | Purpose |
 |-----------|---------|
-| pi-subagents | Spawn Executor subagents |
-| pi-until-done | TDD-first autonomous loop |
-| pi-lens | LSP/linter feedback per edit |
+| pi-subagents | Spawn Executor subagents (`/subagent`) |
+| pi-until-done | TDD-first autonomous loop (`/until-done`) |
+| pi-lens | LSP/linter feedback after each file edit |
 | @gotgenes/pi-permission-system | Destructive command gate |
-| pi-web-access | Web search + URL fetch |
-| @juicesharp/rpiv-todo | Persistent task list |
+| pi-web-access | Web search, URL fetch, librarian skill |
+| @juicesharp/rpiv-todo | Persistent task list overlay |
 
-## Skills (3)
+### File-based (14, shared)
+| Extension | Purpose |
+|-----------|---------|
+| plan-mode | Read-only planning mode |
+| plan-mode-footer | Plan mode TUI footer + shortcut |
+| permission-gate | Confirm before dangerous commands |
+| ast-grep | AST-based code search |
+| auto-name | Auto-name sessions |
+| firecrawl | Web scraping |
+| footer | TUI footer with agent + model |
+| git-checkpoint | Auto-stash each turn |
+| herdr-agent-state | Agent state tracking |
+| interactive-shell | Interactive bash (`!` prefix) |
+| skills | `/skills` browser UI |
+| slash-commands | Extended slash commands |
+| till-done | Task progress tracker |
+| wiki | `/wiki:make`, `/wiki:update`, `/wiki:refresh` |
+| yeet | `git add` + `commit` + `push` shortcut |
 
+## Skills (8, shared)
 | Skill | Purpose |
 |-------|---------|
-| maintain-wiki | Create/update docs/wiki/ |
+| maintain-wiki | Create/update docs/wiki/ for AI navigation |
 | improve-codebase-architecture | Find deepening opportunities |
-| grill-with-docs | Stress-test plans against docs |
+| grill-with-docs | Stress-test plans against domain docs and ADRs |
+| diagnose | Bug diagnosis loop |
+| prototype | Throwaway prototypes |
+| review | Code review against standards and spec |
+| tdd | Red-green-refactor loop |
+| triage | Issue triage state machine |
 
 ## Key commands
 
