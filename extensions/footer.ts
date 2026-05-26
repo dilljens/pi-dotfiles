@@ -1,9 +1,9 @@
 /**
- * Footer Extension — standalone TUI footer with agent status, token stats, context usage.
+ * Footer Extension — always-on custom TUI footer.
  *
  * Layout:
- *   ~/project (branch)
- *   ↑tokens ↓tokens $cost context/total  [plan]  model  auth:profile  • thinking
+ *   ~/project (branch)                                                           auth:bare
+ *   ↑tokens ↓tokens $cost context/total  [plan]  deepseek-v4-flash  • high
  */
 
 import type { AssistantMessage } from "@earendil-works/pi-ai";
@@ -12,8 +12,6 @@ import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 import { readdirSync, existsSync, readFileSync } from "node:fs";
 
 export default function (pi: ExtensionAPI) {
-	let enabled = false;
-
 	function createFooterRenderer(
 		ctx: any,
 		theme: any,
@@ -64,10 +62,9 @@ export default function (pi: ExtensionAPI) {
 			}
 		}
 
-		// ── Plan mode status (already colored by plan-mode extension) ──
+		// ── Plan mode status ──
 		const statuses = footerData.getExtensionStatuses();
 		const rawPlanStatus = statuses.get("plan-mode") || "";
-		// Simplify: just detect if plan mode is active
 		const planActive = rawPlanStatus.includes("plan") || rawPlanStatus.includes("build");
 		const planLabel = planActive ? "  " + theme.fg("warning", "plan") : "";
 
@@ -107,7 +104,7 @@ export default function (pi: ExtensionAPI) {
 		const pad1 = " ".repeat(Math.max(1, width - pathW - authW));
 		const line1 = truncateToWidth(pathLeft + pad1 + authRight, width);
 
-		// ── Line 2: tokens | context | [plan] | model | auth:profile | • thinking ──
+		// ── Line 2: tokens | context | [plan] | model | • thinking ──
 		const stats = theme.fg("dim",
 			"↑" + fmt(input) + " ↓" + fmt(output) + " $" + cost.toFixed(3)
 		) + contextStr;
@@ -125,43 +122,16 @@ export default function (pi: ExtensionAPI) {
 		return [line1, line2];
 	}
 
-	pi.registerCommand("footer", {
-		description: "Toggle custom footer",
-		handler: async (_args, ctx) => {
-			enabled = !enabled;
-
-			if (enabled) {
-				ctx.ui.setFooter((tui, theme, footerData) => {
-					const unsub = footerData.onBranchChange(() => tui.requestRender());
-					return {
-						dispose: unsub,
-						invalidate() {},
-						render(width: number): string[] {
-							return createFooterRenderer(ctx, theme, footerData, width);
-						},
-					};
-				});
-				ctx.ui.notify("Custom footer enabled", "info");
-			} else {
-				ctx.ui.setFooter(undefined);
-				ctx.ui.notify("Default footer restored", "info");
-			}
-		},
-	});
-
 	pi.on("session_start", async (_event, ctx) => {
-		if (!enabled) {
-			enabled = true;
-			ctx.ui.setFooter((tui, theme, footerData) => {
-				const unsub = footerData.onBranchChange(() => tui.requestRender());
-				return {
-					dispose: unsub,
-					invalidate() {},
-					render(width: number): string[] {
-						return createFooterRenderer(ctx, theme, footerData, width);
-					},
-				};
-			});
-		}
+		ctx.ui.setFooter((tui, theme, footerData) => {
+			const unsub = footerData.onBranchChange(() => tui.requestRender());
+			return {
+				dispose: unsub,
+				invalidate() {},
+				render(width: number): string[] {
+					return createFooterRenderer(ctx, theme, footerData, width);
+				},
+			};
+		});
 	});
 }
