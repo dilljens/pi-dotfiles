@@ -9,6 +9,7 @@
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { readdirSync, existsSync, readFileSync } from "node:fs";
 
 export default function (pi: ExtensionAPI) {
 	let enabled = false;
@@ -75,14 +76,13 @@ export default function (pi: ExtensionAPI) {
 		const profilesDir = home + "/.pi/agent-profiles";
 		let authProfile = "";
 		try {
-			const fs = require("fs");
-			const profiles = fs.readdirSync(profilesDir, { withFileTypes: true });
+			const profiles = readdirSync(profilesDir, { withFileTypes: true });
 			for (const entry of profiles) {
 				if (!entry.isDirectory()) continue;
 				const authPath = profilesDir + "/" + entry.name + "/auth.json";
-				if (fs.existsSync(authPath)) {
+				if (existsSync(authPath)) {
 					try {
-						const content = JSON.parse(fs.readFileSync(authPath, "utf-8"));
+						const content = JSON.parse(readFileSync(authPath, "utf-8"));
 						if (content && typeof content === "object" && Object.keys(content).length > 0) {
 							authProfile = entry.name;
 							break;
