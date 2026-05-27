@@ -9,7 +9,6 @@
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
-import { readdirSync, existsSync, readFileSync } from "node:fs";
 
 export default function (pi: ExtensionAPI) {
 	function createFooterRenderer(
@@ -68,31 +67,15 @@ export default function (pi: ExtensionAPI) {
 		const planActive = rawPlanStatus.includes("plan") || rawPlanStatus.includes("build");
 		const planLabel = planActive ? "  " + theme.fg("warning", "plan") : "";
 
-		// ── Auth profile ──
-		const home = process.env.HOME || "";
-		const profilesDir = home + "/.pi/agent-profiles";
-		let authProfile = "";
-		try {
-			const profiles = readdirSync(profilesDir, { withFileTypes: true });
-			for (const entry of profiles) {
-				if (!entry.isDirectory()) continue;
-				const authPath = profilesDir + "/" + entry.name + "/auth.json";
-				if (existsSync(authPath)) {
-					try {
-						const content = JSON.parse(readFileSync(authPath, "utf-8"));
-						if (content && typeof content === "object" && Object.keys(content).length > 0) {
-							authProfile = entry.name;
-							break;
-						}
-					} catch {}
-				}
-			}
-		} catch {}
+		// ── Auth profile: read from PI_CODING_AGENT_DIR env var ──
+		const agentDir = process.env.PI_CODING_AGENT_DIR || "";
+		let authProfile = agentDir ? agentDir.split("/").pop() || "" : "";
 
 		// ── Git branch ──
 		const branch = footerData.getGitBranch();
 
 		// ── CWD path ──
+		const home = process.env.HOME || "";
 		const cwd = ctx.cwd;
 		const displayPath = cwd.startsWith(home) ? "~" + cwd.slice(home.length) : cwd;
 
