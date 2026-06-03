@@ -575,8 +575,8 @@ export default function agentModeExtension(pi: ExtensionAPI) {
 
 	// ─── Keyboard Shortcuts ─────────────────────────────────────────────────────
 
-	// Ctrl+Shift+M to cycle agents (default)
-	pi.registerShortcut(Key.ctrlShift("m"), {
+	// Alt+P to cycle agents
+	pi.registerShortcut("alt+p", {
 		description: "Cycle agents",
 		handler: async (ctx) => {
 			await cycleAgent(1, ctx);
