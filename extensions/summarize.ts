@@ -1,6 +1,12 @@
 import { complete } from "@earendil-works/pi-ai";
-import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
-import { DynamicBorder, getMarkdownTheme } from "@earendil-works/pi-coding-agent";
+import type {
+	ExtensionAPI,
+	ExtensionCommandContext,
+} from "@earendil-works/pi-coding-agent";
+import {
+	DynamicBorder,
+	getMarkdownTheme,
+} from "@earendil-works/pi-coding-agent";
 import { Container, Markdown, matchesKey, Text } from "@earendil-works/pi-tui";
 
 type ContentBlock = {
@@ -59,7 +65,9 @@ const extractToolCallLines = (content: unknown): string[] => {
 		}
 
 		const args = block.arguments ?? {};
-		toolCalls.push(`Tool ${block.name} was called with args ${JSON.stringify(args)}`);
+		toolCalls.push(
+			`Tool ${block.name} was called with args ${JSON.stringify(args)}`,
+		);
 	}
 
 	return toolCalls;
@@ -125,9 +133,13 @@ const showSummaryUi = async (summary: string, ctx: ExtensionCommandContext) => {
 		const mdTheme = getMarkdownTheme();
 
 		container.addChild(border);
-		container.addChild(new Text(theme.fg("accent", theme.bold("Conversation Summary")), 1, 0));
+		container.addChild(
+			new Text(theme.fg("accent", theme.bold("Conversation Summary")), 1, 0),
+		);
 		container.addChild(new Markdown(summary, 1, 1, mdTheme));
-		container.addChild(new Text(theme.fg("dim", "Press Enter or Esc to close"), 1, 0));
+		container.addChild(
+			new Text(theme.fg("dim", "Press Enter or Esc to close"), 1, 0),
+		);
 		container.addChild(border);
 
 		return {
@@ -162,7 +174,8 @@ export default function (pi: ExtensionAPI) {
 
 			const model = ctx.model;
 			if (!model) {
-				if (ctx.hasUI) ctx.ui.notify("No active model to summarize with", "warning");
+				if (ctx.hasUI)
+					ctx.ui.notify("No active model to summarize with", "warning");
 				return;
 			}
 
@@ -175,7 +188,12 @@ export default function (pi: ExtensionAPI) {
 			const summaryMessages = [
 				{
 					role: "user" as const,
-					content: [{ type: "text" as const, text: buildSummaryPrompt(conversationText) }],
+					content: [
+						{
+							type: "text" as const,
+							text: buildSummaryPrompt(conversationText),
+						},
+					],
 					timestamp: Date.now(),
 				},
 			];
