@@ -1,13 +1,6 @@
 # pi-dotfiles
 
-Personal [pi coding agent](https://github.com/earendil-works/pi-mono) setup — profiles, skills, extensions, and agents.
-
-## Profiles
-
-| Profile | Model | Thinking | Role |
-|---------|-------|----------|------|
-| `bare` | deepseek-v4-pro | high | Planner — interactive planning loop |
-| `main` | deepseek-v4-flash | minimal | Executor — direct implementation |
+Personal [pi coding agent](https://github.com/earendil-works/pi-mono) setup — skills, extensions, and agents.
 
 ## Fresh setup
 
@@ -19,53 +12,43 @@ curl -fsSL https://pi.dev/install.sh | bash
 git clone https://github.com/dilljens/pi-dotfiles
 cd pi-dotfiles
 
-# 3. Set your DeepSeek API key
+# 3. Set your API key (commandcode, deepseek, etc.)
 export DEEPSEEK_API_KEY="sk-..."
 
-# 4. Install a profile
-./profiles/bare/install.sh     # Planner profile
-./profiles/main/install.sh     # Executor profile
+# 4. Install
+./install.sh
 
 # 5. Launch
-pi --profile bare
-pi --profile main
+pi
 ```
 
-Each `install.sh` copies config, symlinks shared assets (extensions, skills, agents), and installs profile-specific npm packages.
+The `install.sh` copies config, symlinks shared assets (extensions, skills, agents), and installs npm packages.
 
 ## What's inside
 
 ```
 pi-dotfiles/
-├── models.json                  # DeepSeek V4 provider config (shared)
+├── install.sh                   # Single installer
+├── settings.json                # Pi settings (models, packages, skills)
+├── keybindings.json             # Custom keybindings
+├── models.json                  # Provider config (commandcode, deepseek)
 │
-├── profiles/
-│   ├── bare/                    # Planner — deepseek-v4-pro:high
-│   │   ├── install.sh
-│   │   ├── settings.json
-│   │   ├── keybindings.json
-│   │   ├── packages.txt
-│   │   └── skills.txt
-│   └── main/                    # Executor — deepseek-v4-flash
-│       ├── install.sh
-│       ├── settings.json
-│       ├── keybindings.json
-│       ├── packages.txt
-│       └── skills.txt
-│
-├── agents/                      # Shared agent definitions
+├── agents/                      # Agent definitions (planner, executor, etc.)
+│   ├── planner.md
+│   ├── executor.md
 │   ├── agent-maker.md
 │   ├── pi-builder.md
-│   └── plan.md
+│   ├── plan.md
+│   └── task-runner.md
 │
-├── extensions/                  # Shared file-based extensions
+├── extensions/                  # File-based extensions
 │   ├── plan-mode/
 │   ├── skills.ts
 │   ├── permission-gate.ts
 │   ├── git-checkpoint.ts
 │   └── ...
 │
-├── skills/                      # Shared skill definitions
+├── skills/                      # Skill definitions
 │   └── engineering/
 │       ├── maintain-wiki/
 │       ├── improve-codebase-architecture/
@@ -81,15 +64,6 @@ pi-dotfiles/
     └── _lib.sh                  # Shared installer helpers
 ```
 
-## Adding a new profile
-
-```bash
-mkdir -p profiles/my-profile
-touch profiles/my-profile/{install.sh,settings.json,packages.txt,skills.txt}
-```
-
-Follow the same pattern as `bare/` or `main/`. Shared assets (extensions, skills, agents) are always symlinked — only `packages.txt` and `skills.txt` are profile-specific.
-
 ## Making changes
 
 Extensions, skills, and agents are symlinked — edits in the repo are live:
@@ -103,4 +77,13 @@ Commit and push:
 
 ```bash
 git add -A && git commit -m "whatever" && git push
+```
+
+## Re-installing
+
+After pulling changes:
+
+```bash
+cd pi-dotfiles
+./install.sh
 ```

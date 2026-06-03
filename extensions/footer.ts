@@ -2,7 +2,7 @@
  * Footer Extension — always-on custom TUI footer.
  *
  * Layout:
- *   ~/project (branch)                                                           auth:bare
+ *   ~/project (branch)
  *   ↑tokens ↓tokens $cost context/total  [plan]  deepseek-v4-flash  • high
  */
 
@@ -67,10 +67,6 @@ export default function (pi: ExtensionAPI) {
 		const planActive = rawPlanStatus.includes("plan") || rawPlanStatus.includes("build");
 		const planLabel = planActive ? "  " + theme.fg("warning", "plan") : "";
 
-		// ── Auth profile: read from PI_CODING_AGENT_DIR env var ──
-		const agentDir = process.env.PI_CODING_AGENT_DIR || "";
-		let authProfile = agentDir ? agentDir.split("/").pop() || "" : "";
-
 		// ── Git branch ──
 		const branch = footerData.getGitBranch();
 
@@ -79,13 +75,9 @@ export default function (pi: ExtensionAPI) {
 		const cwd = ctx.cwd;
 		const displayPath = cwd.startsWith(home) ? "~" + cwd.slice(home.length) : cwd;
 
-		// ── Line 1: path (branch) .................................. auth:bare ──
+		// ── Line 1: path (branch) ──
 		const pathLeft = theme.fg("dim", displayPath + (branch ? " (" + branch + ")" : ""));
-		const authRight = authProfile ? theme.fg("accent", "auth:" + authProfile) : "";
-		const pathW = visibleWidth(pathLeft);
-		const authW = visibleWidth(authRight);
-		const pad1 = " ".repeat(Math.max(1, width - pathW - authW));
-		const line1 = truncateToWidth(pathLeft + pad1 + authRight, width);
+		const line1 = truncateToWidth(pathLeft, width);
 
 		// ── Line 2: tokens | context | [plan] | model | • thinking ──
 		const stats = theme.fg("dim",

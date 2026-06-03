@@ -1,4 +1,0 @@
-{
-  "tui.editor.deleteWordBackward": ["ctrl+backspace"],
-  "tui.editor.deleteWordForward": ["ctrl+delete"]
-}
