@@ -1,6 +1,6 @@
 # Agent Workflow: Planner ↔ Executor
 
-Defines agents for pi-agent-mode: planner, executor, agent-maker, pi-builder, task-runner.
+Defines agents for pi-agent-mode: planner, executor, task-runner.
 
 ## Flow
 
@@ -20,23 +20,18 @@ You present a task
                     ┌──────────────────────┐
                     │  Executor             │
                     │  implements, verifies │
+                    │  hands back to        │
+                    │  planner when done    │
                     └────────┬─────────────┘
                              │
-                       ┌─────┴──────┐
-                       │            │
-                    small change   │ large change
-                       │            │
-                       ▼            ▼
-                     done       set_agent → planner
-                     (report     │
-                      done)      ▼
-                          ┌──────────────────────┐
-                          │  Planner (review)    │
-                          │  inspects diff       │
-                          │  approves or sends   │
-                          │  back for fixes      │
-                          └──────────────────────┘
-                                 │ (max 3 rounds)
+                             ▼
+                    ┌──────────────────────┐
+                    │  Planner (review)    │
+                    │  inspects diff       │
+                    │  approves or sends   │
+                    │  back for fixes      │
+                    └──────────────────────┘
+                           │ (max 3 rounds)
 ```
 
 ## Usage
@@ -57,8 +52,6 @@ Describe the task...
 
 **Other agents:**
 ```
-/agent agent-maker    # create/modify agent definitions
-/agent pi-builder     # build extensions and skills
 /agent task-runner    # background long-running processes
 /agent clear          # back to base mode
 ```

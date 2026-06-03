@@ -1,5 +1,6 @@
 ---
 name: task-runner
+model: deepseek/deepseek-v4-flash
 description: |
   Run a shell command in background, monitor it, and report completion.
   Use when you need to run a long-lived process (training, builds, downloads)
