@@ -15,13 +15,15 @@ export default function (pi: ExtensionAPI) {
 		ctx: any,
 		theme: any,
 		footerData: any,
-		width: number
+		width: number,
 	): string[] {
 		const fmt = (n: number) =>
 			n < 1000 ? String(n) : (n / 1000).toFixed(1) + "k";
 
 		// ── Token stats ──
-		let input = 0, output = 0, cost = 0;
+		let input = 0,
+			output = 0,
+			cost = 0;
 		for (const e of ctx.sessionManager.getBranch()) {
 			if (e.type === "message" && (e as any).message?.role === "assistant") {
 				const m = (e as any).message as AssistantMessage;
@@ -39,12 +41,16 @@ export default function (pi: ExtensionAPI) {
 				const rawTokens = fmt(ctxUsage.tokens);
 				const windowFmt = fmt(ctxUsage.contextWindow);
 				const pct = ctxUsage.percent;
-				const pctColor = pct > 90 ? theme.fg("error", rawTokens) :
-					pct > 70 ? theme.fg("warning", rawTokens) :
-					theme.fg("dim", rawTokens);
+				const pctColor =
+					pct > 90
+						? theme.fg("error", rawTokens)
+						: pct > 70
+							? theme.fg("warning", rawTokens)
+							: theme.fg("dim", rawTokens);
 				contextStr = " " + pctColor + theme.fg("dim", "/" + windowFmt);
 			} else {
-				contextStr = " " + theme.fg("dim", "?/" + fmt(ctxUsage?.contextWindow ?? 0));
+				contextStr =
+					" " + theme.fg("dim", "?/" + fmt(ctxUsage?.contextWindow ?? 0));
 			}
 		} catch {
 			contextStr = "";
@@ -64,7 +70,8 @@ export default function (pi: ExtensionAPI) {
 		// ── Plan mode status ──
 		const statuses = footerData.getExtensionStatuses();
 		const rawPlanStatus = statuses.get("plan-mode") || "";
-		const planActive = rawPlanStatus.includes("plan") || rawPlanStatus.includes("build");
+		const planActive =
+			rawPlanStatus.includes("plan") || rawPlanStatus.includes("build");
 		const planLabel = planActive ? "  " + theme.fg("warning", "plan") : "";
 
 		// ── Git branch ──
@@ -77,23 +84,30 @@ export default function (pi: ExtensionAPI) {
 		// ── CWD path ──
 		const home = process.env.HOME || "";
 		const cwd = ctx.cwd;
-		const displayPath = cwd.startsWith(home) ? "~" + cwd.slice(home.length) : cwd;
+		const displayPath = cwd.startsWith(home)
+			? "~" + cwd.slice(home.length)
+			: cwd;
 
 		// ── Line 1: path (branch) ......................... agent ──
-		const pathLeft = theme.fg("dim", displayPath + (branch ? " (" + branch + ")" : ""));
+		const pathLeft = theme.fg(
+			"dim",
+			displayPath + (branch ? " (" + branch + ")" : ""),
+		);
 		const pathW = visibleWidth(pathLeft);
 		const agentW = visibleWidth(agentLabel);
 		const pad1 = " ".repeat(Math.max(1, width - pathW - agentW));
 		const line1 = truncateToWidth(pathLeft + pad1 + agentLabel, width);
 
 		// ── Line 2: tokens | context | [plan] | model | • thinking ──
-		const stats = theme.fg("dim",
-			"↑" + fmt(input) + " ↓" + fmt(output) + " $" + cost.toFixed(3)
-		) + contextStr;
+		const stats =
+			theme.fg(
+				"dim",
+				"↑" + fmt(input) + " ↓" + fmt(output) + " $" + cost.toFixed(3),
+			) + contextStr;
 
-		const rightBlock = theme.fg("dim",
-			modelId +
-			"  " + theme.fg("accent", "• " + thinkingLevel)
+		const rightBlock = theme.fg(
+			"dim",
+			modelId + "  " + theme.fg("accent", "• " + thinkingLevel),
 		);
 
 		const statsW = visibleWidth(stats) + visibleWidth(planLabel);

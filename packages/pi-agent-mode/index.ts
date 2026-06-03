@@ -536,8 +536,8 @@ export default function agentModeExtension(pi: ExtensionAPI) {
 	}
 
 	async function cycleAgent(direction: 1 | -1, ctx: ExtensionContext): Promise<void> {
-		const agentNames = Array.from(agents.keys()).sort();
-		if (agentNames.length === 0) {
+		const allNames = Array.from(agents.keys()).sort();
+		if (allNames.length === 0) {
 			ctx.ui.notify(
 				"No agents found. Create agent files in ~/.pi/agent/agents/ or .pi/agents/",
 				"warning",
@@ -545,12 +545,27 @@ export default function agentModeExtension(pi: ExtensionAPI) {
 			return;
 		}
 
-		const currentName = activeAgentName;
-		const currentIndex = currentName ? agentNames.indexOf(currentName) : -1;
+		// Only cycle planner, executor, and default (none)
+		const cycleNames = allNames.filter(n => n === "planner" || n === "executor");
+		const agentNames = ["default", ...cycleNames];
+
+		const currentName = activeAgentName || "default";
+		const currentIndex = agentNames.indexOf(currentName);
 		const nextIndex = currentIndex === -1
 			? (direction === 1 ? 0 : agentNames.length - 1)
 			: (currentIndex + direction + agentNames.length) % agentNames.length;
 		const nextName = agentNames[nextIndex];
+
+		if (nextName === "default") {
+			activeAgentName = undefined;
+			activeAgent = undefined;
+			if (originalState?.model) await pi.setModel(originalState.model);
+			restoreAllTools();
+			ctx.ui.setStatus("agent", "default");
+			ctx.ui.notify("Agent cleared, defaults restored", "info");
+			updateStatus(ctx);
+			return;
+		}
 
 		const agent = agents.get(nextName);
 		if (!agent) return;
