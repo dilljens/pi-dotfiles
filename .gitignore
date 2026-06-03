@@ -22,5 +22,6 @@ Thumbs.db
 .idea/
 
 node_modules/
+npm/package-lock.json
 dist/
 *.tsbuildinfo
