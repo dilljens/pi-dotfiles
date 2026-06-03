@@ -1,14 +1,13 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { DynamicBorder } from "@earendil-works/pi-coding-agent";
-import { Container, type SelectItem, SelectList, Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
+// Note: LSP errors below are false positives. Pi loads extensions via jiti
+// at runtime — no tsc compilation needed.
 
 /**
  * Slash Commands Browser Extension
  *
- * Provides both:
- *   - /commands (interactive slash command for the user)
- *   - get_commands (tool for the LLM to enumerate all slash commands)
+ * Provides the `list_commands` tool for the AI to enumerate all available
+ * slash commands (built-in, extension, prompt, skill).
  *
  * Built-in commands are hardcoded from the pi README. Extension/prompt/skill
  * commands are fetched via pi.getCommands() at runtime.
@@ -101,135 +100,7 @@ function gatherCommands(pi: ExtensionAPI): CommandEntry[] {
   return entries;
 }
 
-function buildSelectItems(entries: CommandEntry[]): SelectItem[] {
-  const items: SelectItem[] = [];
-  let lastSource = "";
-
-  for (const entry of entries) {
-    const sourceLabel = entry.source === "builtin" ? "── Built-in ──"
-      : entry.source === "extension" ? "── Extensions ──"
-      : entry.source === "prompt" ? "── Prompt Templates ──"
-      : "── Skills ──";
-
-    if (sourceLabel !== lastSource) {
-      items.push({
-        value: `__header__${entry.source}`,
-        label: sourceLabel,
-        description: "",
-      });
-      lastSource = sourceLabel;
-    }
-
-    const location = formatLocation(entry);
-    const desc = entry.description
-      ? `${location} — ${entry.description}`
-      : location;
-
-    items.push({
-      value: `/${entry.name}`,
-      label: `/${entry.name}`,
-      description: desc,
-    });
-  }
-
-  return items;
-}
-
 export default function (pi: ExtensionAPI) {
-  // ─── User slash command ─────────────────────────────────────────────────
-  pi.registerCommand("commands", {
-    description:
-      "List all slash commands with their source locations. Use --file <path> to write to a file.",
-    handler: async (args, ctx) => {
-      const entries = gatherCommands(pi);
-
-      // Check for --file argument first
-      const fileMatch = args?.match(/--file\s+(\S+)/);
-      if (fileMatch) {
-        const filePath = fileMatch[1];
-        const lines: string[] = [];
-        let lastSource = "";
-
-        for (const entry of entries) {
-          const sourceLabel = entry.source === "builtin" ? "── Built-in ──"
-            : entry.source === "extension" ? "── Extensions ──"
-            : entry.source === "prompt" ? "── Prompt Templates ──"
-            : "── Skills ──";
-
-          if (sourceLabel !== lastSource) {
-            if (lines.length > 0) lines.push("");
-            lines.push(sourceLabel);
-            lastSource = sourceLabel;
-          }
-
-          const cmdName = `/${entry.name}`;
-          const location = formatLocation(entry);
-          const desc = entry.description ? ` — ${entry.description}` : "";
-          lines.push(`  ${cmdName.padEnd(24)}${location}${desc}`);
-        }
-
-        const output = lines.join("\n");
-        try {
-          const fs = await import("node:fs");
-          fs.writeFileSync(filePath, output, "utf-8");
-          ctx.ui.notify(
-            `Wrote ${entries.length} commands to ${filePath}`,
-            "info",
-          );
-        } catch (err) {
-          ctx.ui.notify(`Failed to write to ${filePath}: ${err}`, "error");
-        }
-        return;
-      }
-
-      // Build select list with section headers
-      const items = buildSelectItems(entries);
-      const headerText = `Slash Commands (${entries.length})`;
-
-      ctx.ui.custom<string | null>((tui, theme, _kb, done) => {
-        const container = new Container();
-        container.addChild(new DynamicBorder((s) => theme.fg("accent", s)));
-        container.addChild(
-          new Text(theme.fg("accent", theme.bold(headerText)), 1, 0),
-        );
-
-        const maxVisible = Math.min(items.length, 20);
-        const selectList = new SelectList(items, maxVisible, {
-          selectedPrefix: (t) => theme.fg("accent", t),
-          selectedText: (t) => theme.fg("accent", t),
-          description: (t) => theme.fg("muted", t),
-          scrollInfo: (t) => theme.fg("dim", t),
-          noMatch: (t) => theme.fg("warning", t),
-        });
-        selectList.onSelect = () => done(null);
-        selectList.onCancel = () => done(null);
-        container.addChild(selectList);
-
-        container.addChild(
-          new Text(
-            theme.fg("dim", "Type to filter · esc to close"),
-            1,
-            0,
-          ),
-        );
-        container.addChild(new DynamicBorder((s) => theme.fg("accent", s)));
-
-        return {
-          render(w) {
-            return container.render(w);
-          },
-          invalidate() {
-            container.invalidate();
-          },
-          handleInput(data) {
-            selectList.handleInput(data);
-            tui.requestRender();
-          },
-        };
-      });
-    },
-  });
-
   // ─── LLM tool ──────────────────────────────────────────────────────────
   pi.registerTool({
     name: "list_commands",
