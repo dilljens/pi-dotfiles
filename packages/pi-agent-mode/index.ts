@@ -545,25 +545,12 @@ export default function agentModeExtension(pi: ExtensionAPI) {
 			return;
 		}
 
-		const cycleList = ["(none)", ...agentNames];
-		const currentName = activeAgentName ?? "(none)";
-		const currentIndex = cycleList.indexOf(currentName);
+		const currentName = activeAgentName;
+		const currentIndex = currentName ? agentNames.indexOf(currentName) : -1;
 		const nextIndex = currentIndex === -1
-			? (direction === 1 ? 0 : cycleList.length - 1)
-			: (currentIndex + direction + cycleList.length) % cycleList.length;
-		const nextName = cycleList[nextIndex];
-
-		if (nextName === "(none)") {
-			activeAgentName = undefined;
-			activeAgent = undefined;
-			if (originalState?.model) {
-				await pi.setModel(originalState.model);
-			}
-			restoreAllTools();
-			ctx.ui.notify("Agent cleared, defaults restored", "info");
-			updateStatus(ctx);
-			return;
-		}
+			? (direction === 1 ? 0 : agentNames.length - 1)
+			: (currentIndex + direction + agentNames.length) % agentNames.length;
+		const nextName = agentNames[nextIndex];
 
 		const agent = agents.get(nextName);
 		if (!agent) return;
