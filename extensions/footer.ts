@@ -70,14 +70,21 @@ export default function (pi: ExtensionAPI) {
 		// ── Git branch ──
 		const branch = footerData.getGitBranch();
 
+		// ── Agent name ──
+		const agentStatus = footerData.getExtensionStatuses().get("agent") || "";
+		const agentLabel = agentStatus ? theme.fg("accent", agentStatus) : "";
+
 		// ── CWD path ──
 		const home = process.env.HOME || "";
 		const cwd = ctx.cwd;
 		const displayPath = cwd.startsWith(home) ? "~" + cwd.slice(home.length) : cwd;
 
-		// ── Line 1: path (branch) ──
+		// ── Line 1: path (branch) ......................... agent ──
 		const pathLeft = theme.fg("dim", displayPath + (branch ? " (" + branch + ")" : ""));
-		const line1 = truncateToWidth(pathLeft, width);
+		const pathW = visibleWidth(pathLeft);
+		const agentW = visibleWidth(agentLabel);
+		const pad1 = " ".repeat(Math.max(1, width - pathW - agentW));
+		const line1 = truncateToWidth(pathLeft + pad1 + agentLabel, width);
 
 		// ── Line 2: tokens | context | [plan] | model | • thinking ──
 		const stats = theme.fg("dim",
