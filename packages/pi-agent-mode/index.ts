@@ -575,18 +575,11 @@ export default function agentModeExtension(pi: ExtensionAPI) {
 
 	// ─── Keyboard Shortcuts ─────────────────────────────────────────────────────
 
-	// Ctrl+W / Ctrl+Shift+W for agent cycling
-	pi.registerShortcut(Key.ctrl("w"), {
-		description: "Cycle agents forward",
+	// Ctrl+Shift+M to cycle agents (default)
+	pi.registerShortcut(Key.ctrlShift("m"), {
+		description: "Cycle agents",
 		handler: async (ctx) => {
 			await cycleAgent(1, ctx);
-		},
-	});
-
-	pi.registerShortcut(Key.ctrlShift("w"), {
-		description: "Cycle agents backward",
-		handler: async (ctx) => {
-			await cycleAgent(-1, ctx);
 		},
 	});
 
