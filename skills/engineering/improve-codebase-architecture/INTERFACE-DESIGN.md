@@ -16,9 +16,9 @@ Before spawning sub-agents, write a user-facing explanation of the problem space
 
 Show this to the user, then immediately proceed to Step 2. The user reads and thinks while the sub-agents work in parallel.
 
-### 2. Spawn sub-agents
+### 2. Spawn sub-agents in parallel
 
-Spawn 3+ sub-agents in parallel using the Agent tool. Each must produce a **radically different** interface for the deepened module.
+Spawn 3+ sub-agents in parallel using `subagent({ tasks: [...] })`. Each must produce a **radically different** interface for the deepened module.
 
 Prompt each sub-agent with a separate technical brief (file paths, coupling details, dependency category from [DEEPENING.md](DEEPENING.md), what sits behind the seam). The brief is independent of the user-facing problem-space explanation in Step 1. Give each agent a different design constraint:
 
@@ -28,6 +28,20 @@ Prompt each sub-agent with a separate technical brief (file paths, coupling deta
 - Agent 4 (if applicable): "Design around ports & adapters for cross-seam dependencies."
 
 Include both [LANGUAGE.md](LANGUAGE.md) vocabulary and CONTEXT.md vocabulary in the brief so each sub-agent names things consistently with the architecture language and the project's domain language.
+
+Usage:
+
+```
+subagent({
+  tasks: [
+    { agent: "...", task: "Design brief for Agent 1..." },
+    { agent: "...", task: "Design brief for Agent 2..." },
+    { agent: "...", task: "Design brief for Agent 3..." },
+  ],
+  agentScope: "user",
+  concurrency: 3,
+})
+```
 
 Each sub-agent outputs:
 

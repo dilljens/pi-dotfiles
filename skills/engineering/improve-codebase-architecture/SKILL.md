@@ -32,9 +32,9 @@ This skill is _informed_ by the project's domain model. The domain language give
 
 ### 1. Explore
 
-Read the project's domain glossary and any ADRs in the area you're touching first.
+First, read the project's `CONTEXT.md` (domain glossary) and `docs/adr/` (recorded decisions). If neither exists, the project hasn't been onboarded to the wiki skill — skip the domain-language check and work from the code's own naming.
 
-Then use the Agent tool with `subagent_type=Explore` to walk the codebase. Don't follow rigid heuristics — explore organically and note where you experience friction:
+Then explore the codebase directly using shell tools (`find`, `rg`, `fd`, `ls -R`), AST queries (`ast_grep_search`), and LSP navigation (`lsp_navigation`). Read key files. Don't follow rigid heuristics — explore organically and note where you experience friction:
 
 - Where does understanding one concept require bouncing between many small modules?
 - Where are modules **shallow** — interface nearly as complex as the implementation?
@@ -44,30 +44,46 @@ Then use the Agent tool with `subagent_type=Explore` to walk the codebase. Don't
 
 Apply the **deletion test** to anything you suspect is shallow: would deleting it concentrate complexity, or just move it? A "yes, concentrates" is the signal you want.
 
-### 2. Present candidates as an HTML report
+### 2. Present candidates as terminal output
 
-Write a self-contained HTML file to the OS temp directory so nothing lands in the repo. Resolve the temp dir from `$TMPDIR`, falling back to `/tmp` (or `%TEMP%` on Windows), and write to `<tmpdir>/architecture-review-<timestamp>.html` so each run gets a fresh file. Open it for the user — `xdg-open <path>` on Linux, `open <path>` on macOS, `start <path>` on Windows — and tell them the absolute path.
+Write the review directly to stdout — no file created, no browser opened. Use Mermaid code fences for diagrams. The output must be a formatted block in your response so the user reads it inline.
 
-The report uses **Tailwind via CDN** for layout and styling, and **Mermaid via CDN** for diagrams where a graph/flow/sequence reliably communicates the structure. Mix Mermaid with hand-crafted CSS/SVG visuals — use Mermaid when relationships are graph-shaped (call graphs, dependencies, sequences), and hand-built divs/SVG when you want something more editorial (mass diagrams, cross-sections, collapse animations). Each candidate gets a **before/after visualisation**. Be visual.
+Diagrams use Mermaid syntax rendered as fenced code blocks:
 
-For each candidate, the same template as before, but rendered as a card:
+```
+```mermaid
+flowchart LR
+  A[OrderHandler] --> B[OrderValidator]
+  B --> C[OrderRepo]
+```
+```
 
+**Diagram patterns** (see [REPORT.md](REPORT.md) for full guidance):
+- **Mermaid graph** — call flows and dependencies
+- **Cross-section** — horizontal bands showing layer depth
+- **Mass diagram** — compare interface surface area to implementation
+- **Call-graph collapse** — nested boxes collapsing into one deep module
+
+Each candidate is a clear section. Use markdown headings and blocks:
+
+- **Title** — short, names the deepening
+- **Badges** — recommendation strength: `Strong` / `Worth exploring` / `Speculative`, plus a tag for the dependency category (`in-process`, `local-substitutable`, `ports & adapters`, `mock`)
 - **Files** — which files/modules are involved
-- **Problem** — why the current architecture is causing friction
-- **Solution** — plain English description of what would change
-- **Benefits** — explained in terms of locality and leverage, and how tests would improve
-- **Before / After diagram** — side-by-side, custom-drawn, illustrating the shallowness and the deepening
-- **Recommendation strength** — one of `Strong`, `Worth exploring`, `Speculative`, rendered as a badge
+- **Before / After diagram** — the centrepiece. Two Mermaid diagrams or one showing the collapse.
+- **Problem** — one sentence. What hurts.
+- **Solution** — one sentence. What changes.
+- **Wins** — bullets, ≤6 words each. e.g. "Tests hit one interface", "Pricing logic stops leaking", "Delete 4 shallow wrappers"
+- **ADR callout** (if applicable) — a note if the candidate contradicts an existing ADR
 
-End the report with a **Top recommendation** section: which candidate you'd tackle first and why.
+End with a **Top recommendation** section: which candidate you'd tackle first and why.
 
 **Use CONTEXT.md vocabulary for the domain, and [LANGUAGE.md](LANGUAGE.md) vocabulary for the architecture.** If `CONTEXT.md` defines "Order," talk about "the Order intake module" — not "the FooBarHandler," and not "the Order service."
 
-**ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly in the card (e.g. a warning callout: _"contradicts ADR-0007 — but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
+**ADR conflicts**: if a candidate contradicts an existing ADR, only surface it when the friction is real enough to warrant revisiting the ADR. Mark it clearly (e.g. a callout: _"Contradicts ADR-0007 — but worth reopening because…"_). Don't list every theoretical refactor an ADR forbids.
 
-See [HTML-REPORT.md](HTML-REPORT.md) for the full HTML scaffold, diagram patterns, and styling guidance.
+See [REPORT.md](REPORT.md) for diagram patterns and formatting guidance.
 
-Do NOT propose interfaces yet. After the file is written, ask the user: "Which of these would you like to explore?"
+Do NOT propose interfaces yet. After writing the review, ask the user: "Which of these would you like to explore?"
 
 ### 3. Grilling loop
 
