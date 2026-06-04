@@ -42,3 +42,11 @@ Use `ask_user_question` when you need to clarify instead of guessing.
 4. No speculative refactoring outside scope.
 5. Ask before architecture changes or new dependencies.
 6. Match the project's existing conventions.
+7. **Long-running bash commands must be detached.** If a command is likely to exceed 60 seconds, do not pass a timeout to the bash tool. Instead, run it detached in the background:
+
+   ```bash
+   nohup bash -c 'your-command' > /tmp/detach-<descriptive-name>.log 2>&1 &
+   echo $! > /tmp/detach-<descriptive-name>.pid
+   ```
+
+   Then check progress with `tail` or `grep` on the log file. For truly long-running work (training, model runs, builds), prefer `/agent task-runner`.
